@@ -1,8 +1,22 @@
-Welcome to the technical part of the analysis of my taste in the movies (which is my first not guided project in R)
+Welcome to the technical part of the analysis of my taste in the movies (which is my first project in R)
+You can find the presentation with the results here: 
+
+In this research, I want to make an overview of my watching tendencies through the years (2018-2023) and give separate statistics 
+on my viewings in 2023
+
+I exported my rating data from the IMDb website. Though the data provided was not complete for the needs of my analysis, I manually 
+added country of origin and director's gender columns in Excel
+
+# Let's start with uploading the needed libraries and the file itself
+library(tidyverse)
+library(readxl)
+
+ratings <- read_excel("C:/Users/*****/*****/******/ratings.xlsx")
+View(ratings)
 
 
-
-# To select the needed columns from rating_comp to movies because for some reason select() didn't work >:(
+# The file has inappropriate column names and classical select() didn't work to clean out the unnecessary columns.
+# So I decided to assign the needed column to the vectors which then became part of the new data frame - movies
 my_rating <- ratings_comp$`Your Rating`
 date_rated <- ratings_comp$`Date Rated`
 title <- ratings_comp$Title
@@ -14,17 +28,26 @@ director <- ratings_comp$Directors
 gender <- ratings_comp$Gender
 movies <- data_frame(title, date_rated, my_rating, runtime_min, year, genre, country, director, gender)
 
-
-# To sort from the first to the last date rated (R didn't want to arrange a date)
+# Then I fixed the format of date_rated column and sorted from the first to the last date rated
 movies[order(as.Date(movies$date_rated, format="%Y/%m/%d")),]
 
-# To find top countries which movies I watched the most
+# ...and extracted year and month from the date 
+movies$year_rated <- as.numeric(format(movies$date_rated, "%Y"))
+movies$month_rated <- as.numeric(format(movies$date_rated, "%m"))
+
+
+Finally, we can start the analysis process
+
+
+# To find the top countries which movies I watched the most
 cntr_counted <- movies %>%
   group_by(country) %>%
   summarize(count = n()) %>%
   arrange(desc(count))
 
-# To keep only top 10 and visualize
+
+# To keep only the top 10 and visualize 
+# Here and in all next plots, the color of the background corresponds the background color of the presentation slides
 cntr_top10 <- cntr_counted %>% 
   slice_max(count, n = 10)
 ggplot(cntr_top10, aes(x = reorder(country, -count), y = count)) + 
@@ -34,10 +57,9 @@ ggplot(cntr_top10, aes(x = reorder(country, -count), y = count)) +
         axis.title.y = element_blank(), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
-        legend.background = element_rect(fill='#DEC0CD'), 
-        legend.box.background = element_rect(fill='#DEC0CD'), 
         panel.background = element_rect(fill='#DEC0CD'), 
         plot.background = element_rect(fill='#DEC0CD'))
+
 
 # To get the distribution of my ratings
 my_r_counted <- movies %>%
@@ -61,7 +83,7 @@ ggplot(my_r_counted, aes(x = rating, y = count)) +
   labs(y = "frequency")
 
 
-# To find top rated countries by the average rating. 
+# To find top rated countries by the average rating 
 # Only countries at least 3 movies of which I watched are being analyzed
 cntr_rated <- movies %>%
   group_by(country) %>%
@@ -100,12 +122,7 @@ ggplot(gend_distr, aes(x = "", y = count, fill = gender)) +
   scale_fill_brewer(palette = "PRGn") 
 
 
-# To extract year and month from the date 
-movies$year_rated <- as.numeric(format(movies$date_rated, "%Y"))
-movies$month_rated <- as.numeric(format(movies$date_rated, "%m"))
-
-
-# To see the growth of number of movies watched
+# To see the growth of the number of movies watched
 gndrPerYear <- movies %>%
   filter(gender %in% c("M", "W")) %>%
   group_by(year_rated) %>%
@@ -164,14 +181,14 @@ g_rat <- g_rat %>%
 # F-test to check if the variances are different
 res.ftest <- var.test(f_rat, m_rat)
 # p-value = 0.00226, which is less than 0.05. 
-# That means we should reject the null hypotheses -  two population variances are not equal
+# That means we should reject the null hypotheses - two population variances are not equal
 
 
 # As the data is not normally distributed, samples are independent, not of the same size and have unequal variances, 
 # the only thing that's possible is Wilcoxon-Mann-Whitney test
 
 # Null hypothesis: there is no difference in the average ratings of the movies by male and female directors
-# Null hypothesis: movies by female directors get higher rating than movies by male directors
+# Alternative hypothesis: movies by female directors get higher ratings than movies by male directors
 wilcox.test <- wilcox.test(g_rat$f_rat, g_rat$m_rat, alternative = "greater")
 # p-value = 0.7094, which is more than a significance level of 0.05.
 # So, we fail to reject the null hypothesis - there is no difference in the average ratings of the movies directed by both gender
@@ -188,7 +205,7 @@ g_rat %>%
 # mean_m_rat = 6.716867, mean_f_rat = 6.705882
 
 
-# To find the most watched directors
+# To find the most-watched directors
 most_watched_dir <- movies %>%
   count(director)
 most_watched_dir <- most_watched_dir %>%
@@ -206,7 +223,7 @@ movies %>%
   arrange(desc(mean_rat))
 
 
-# Movies watched by the release date
+# To count movies watched by the release date
 mean_by_year <- movies %>%
   drop_na(my_rating) %>%
   group_by(year) %>%
@@ -225,7 +242,7 @@ ggplot(by_year, aes(year)) + geom_histogram(bins = 129) +
         plot.background = element_rect(fill='#DEC0CD'))
 
 
-# To find the highest rated decades
+# To find the highest-rated decades
 mean_by_year <- mean_by_year %>% 
   mutate(Decade = paste0(floor(ifelse(year<2000, year-1900, year)/10)*10, "'s"))
 mean_by_year %>%
@@ -235,7 +252,7 @@ mean_by_year %>%
 
 
 # Duration of the movie products
-# With replacement of "feature" for "series" label for those series that are < 240 min
+# With the replacement of "feature" for "series" label for those series that are < 240 min
 movies <- movies %>%
   mutate(duration = case_when(runtime_min <= 40 ~ 'short',
                               runtime_min < 240 ~ 'feature',
@@ -277,8 +294,7 @@ ggplot(dur_grouped, aes(x = year_rated, y = count, color = duration2)) +
         legend.text = element_text(size = 15))
 
 
-# Genres
-#(IMDb puts "Short" in the genres column, and as already being described, it was omitted from the analysis)
+# Genres (IMDb puts "Short" in the genres column, and as already being described, it was omitted from the analysis)
 genres <- movies %>%
   select(title, year_rated, my_rating, genre)
 genres <- genres %>%
@@ -330,9 +346,9 @@ genres$Western <- as.numeric(genres$Western)
 genres$Fantasy <- as.numeric(genres$Fantasy)
 genres$Horror <- as.numeric(genres$Horror)
 
-# Genre columns contain missing values in the <NA> format. 
-# My attempts to replace them with 0 were unsuccessful
+# Genre columns contain missing values in the <NA> format. My attempts to replace them with 0 were unsuccessful
 # And they can't be  dropped altogether because that would delete rows with present data in other columns
+# So, I created a new data frame from the 2 vectors: names of genres and the total count of each of them in the movies data frame
 genres %>%
   filter(Comedy %in% c(1, 0)) %>%
   summarize(comedy_s = sum(Comedy))
@@ -422,15 +438,16 @@ ggplot(genres_sum, aes(x = fct_reorder(Genres, Count), y = Count)) +
         panel.background = element_rect(fill='#DEC0CD'),
         plot.background = element_rect(fill='#DEC0CD'))
 
-# To find most watched genre combinations
-# In presentation, I omit single-worded results
+
+# To find the most watched genre combinations. (In the presentation, I omit single-worded results)
 movies %>% 
   group_by(genre) %>%
   summarize(count = n()) %>%
   arrange(desc(count))
 
 
-# 2023 stats
+2023 stats
+
 
 # Movies watched and hours watched
 movies %>%
@@ -442,7 +459,8 @@ movies %>%
   drop_na(runtime_min) %>%
   summarize(total_hours = sum(runtime_min)/60)
 
-# Most watched and highest rated directors
+
+# Most watched and highest-rated directors
 movies_2023 <- movies %>%
   filter(year_rated == 2023)
 most_watched_dir_2023 <- movies_2023 %>%
@@ -456,6 +474,7 @@ movies_2023 %>%
   group_by(director) %>%
   summarize(mean_rat = mean(my_rating)) %>%
   arrange(desc(mean_rat))
+
 
 # Distribution of viewings per month
 month_name <- with(movies, factor(month_rated, levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), labels = c('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')))
@@ -475,7 +494,8 @@ ggplot(by_month_2023, aes(x = month_name, y = count)) + geom_col(width = 0.95, c
         panel.background = element_rect(fill='#DEC0CD'), 
         plot.background = element_rect(fill='#DEC0CD'))
 
-# To find most watched genres
+
+# To find the most watched genres
 genres23 <- genres %>%
   filter(year_rated == 2023)
 genres23 %>%
@@ -571,7 +591,8 @@ ggplot(genres_sum23, aes(x = fct_reorder(Genres23, Count23), y = Count23)) +
         panel.background = element_rect(fill='#DEC0CD'),
         plot.background = element_rect(fill='#DEC0CD'))
 
-# To find highest rated genres
+
+# To find the highest-rated genres
 genres %>%
   filter(year_rated == 2023, Romance == 1) %>%
   summarize(m_rom = mean(my_rating))
@@ -659,9 +680,13 @@ ggplot(genres_top, aes(x = fct_reorder(genres_top, count_top), y = count_top)) +
         panel.background = element_rect(fill='#DEC0CD'),
         plot.background = element_rect(fill='#DEC0CD')) + ylim(0, 10)
 
-# To find top rated movies
+
+# To find top-rated movies
 movies %>% 
   filter(year_rated == 2023) %>%
   arrange(desc(my_rating)) %>%
   select(title, my_rating) %>%
   print(n=16)
+
+
+This is the end. Thanks if you got to this place :)
