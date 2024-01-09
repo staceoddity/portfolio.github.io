@@ -1,0 +1,667 @@
+Welcome to the technical part of the analysis of my taste in the movies (which is my first not guided project in R)
+
+
+
+# To select the needed columns from rating_comp to movies because for some reason select() didn't work >:(
+my_rating <- ratings_comp$`Your Rating`
+date_rated <- ratings_comp$`Date Rated`
+title <- ratings_comp$Title
+runtime_min <- ratings_comp$`Runtime (mins)`
+year <- ratings_comp$Year
+genre <- ratings_comp$Genres
+country <- ratings_comp$Country
+director <- ratings_comp$Directors
+gender <- ratings_comp$Gender
+movies <- data_frame(title, date_rated, my_rating, runtime_min, year, genre, country, director, gender)
+
+
+# To sort from the first to the last date rated (R didn't want to arrange a date)
+movies[order(as.Date(movies$date_rated, format="%Y/%m/%d")),]
+
+# To find top countries which movies I watched the most
+cntr_counted <- movies %>%
+  group_by(country) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+# To keep only top 10 and visualize
+cntr_top10 <- cntr_counted %>% 
+  slice_max(count, n = 10)
+ggplot(cntr_top10, aes(x = reorder(country, -count), y = count)) + 
+  geom_col(color = "black") + 
+  geom_text(aes(label = count), vjust = -0.5) + 
+  theme(axis.title.x = element_blank(), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        legend.background = element_rect(fill='#DEC0CD'), 
+        legend.box.background = element_rect(fill='#DEC0CD'), 
+        panel.background = element_rect(fill='#DEC0CD'), 
+        plot.background = element_rect(fill='#DEC0CD'))
+
+# To get the distribution of my ratings
+my_r_counted <- movies %>%
+  group_by(my_rating) %>%
+  summarize(count = n()) %>%
+  arrange(my_rating)
+
+my_r_counted <- my_r_counted %>% 
+  rename("my_rating" = "rating")
+ggplot(my_r_counted, aes(x = rating, y = count)) + 
+  geom_col(width = 1, color = "white") + 
+  scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)) + 
+  theme(axis.title.x = element_text(margin = margin(t = 5, r = 0, b = 0, l = 0)), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        legend.background = element_blank(), 
+        legend.box.background = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'), 
+        plot.background = element_rect(fill='#DEC0CD')) + 
+  labs(y = "frequency")
+
+
+# To find top rated countries by the average rating. 
+# Only countries at least 3 movies of which I watched are being analyzed
+cntr_rated <- movies %>%
+  group_by(country) %>%
+  summarize(count = n(), avg_rat = mean(my_rating)) %>%
+  filter(count >= 3) %>%
+  arrange(desc(avg_rat)) %>%
+  slice_max(avg_rat, n = 10) 
+
+
+# To find the director's gender ratio
+movies %>%
+  group_by(director) %>%
+  summarize(count = n())
+movies # got the tibble of 535 rows
+
+gend_distr <- movies %>%
+  group_by(gender) %>%
+  summarize(count = n()) # W = 103, M = 664, collab = 14
+
+g_d <- gend_distr %>% 
+  arrange(desc(gender)) %>% 
+  mutate(prop = count / sum(gend_distr$count) *100) # W = 13.2%, M = 85%, collab = 1.8%
+
+ggplot(gend_distr, aes(x = "", y = count, fill = gender)) +
+  geom_bar(stat = "identity", width = 1, color="white") +
+  coord_polar("y", start = 0) + 
+  theme(axis.title.x = element_blank(), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'), 
+        legend.background = element_rect(fill='#DEC0CD'), 
+        legend.box.background = element_rect(fill='#DEC0CD'), 
+        plot.background = element_rect(fill='#DEC0CD'), 
+        axis.ticks = element_blank()) + 
+  scale_fill_brewer(palette = "PRGn") 
+
+
+# To extract year and month from the date 
+movies$year_rated <- as.numeric(format(movies$date_rated, "%Y"))
+movies$month_rated <- as.numeric(format(movies$date_rated, "%m"))
+
+
+# To see the growth of number of movies watched
+gndrPerYear <- movies %>%
+  filter(gender %in% c("M", "W")) %>%
+  group_by(year_rated) %>%
+  count(gender)
+ggplot(gndrPerYear, aes(x = year_rated, y = n)) + 
+  geom_line(aes(color = gender), size = 1.5) + 
+  scale_color_manual(values=c("#545454", "#AF1695")) + 
+  theme(axis.title.x = element_blank(), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)), 
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        legend.background = element_rect(fill='#DEC0CD'), 
+        legend.box.background = element_rect(fill='#DEC0CD'), 
+        panel.background = element_rect(fill='#DEC0CD'), 
+        plot.background = element_rect(fill='#DEC0CD')) + 
+  ylim(0, 250) + 
+  labs(y = "number of movies watched")
+
+growthPerYear <- movies %>%
+  group_by(year_rated) %>%
+  summarize(count = n())
+ggplot(growthPerYear, aes(x = year_rated, y = count)) + 
+  geom_line(size = 1.5) +  
+  theme(axis.title.x = element_blank(), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        legend.background = element_rect(fill='#DEC0CD'), 
+        legend.box.background = element_rect(fill='#DEC0CD'), 
+        panel.background = element_rect(fill='#DEC0CD'), 
+        plot.background = element_rect(fill='#DEC0CD')) + 
+  ylim(0, 300) + 
+  labs(y = "number of movies watched")
+
+
+# To see if the distributions are normal (they are not)
+male_rats <- movies %>%
+  select(gender, my_rating) %>%
+  filter(gender == 'M')
+female_rats <- movies %>%
+  select(gender, my_rating) %>%
+  filter(gender == 'W')
+ggplot(female_rats, aes(my_rating)) + geom_bar() + xlim(1, 10)
+ggplot(male_rats, aes(my_rating)) + geom_bar() + xlim(1, 10) 
+
+
+# To make a data frame from the unequal vectors
+m_rat <- male_rats$my_rating
+m_rat <- male_rats$my_rating
+max_ln <- max(c(length(f_rat), length(m_rat))) 
+g_rat<- data.frame(col1 = c(f_rat,rep(NA, max_ln - length(f_rat))), 
+                   col2 = c(m_rat,rep(NA, max_ln - length(m_rat))))
+g_rat <- g_rat %>%
+  rename("f_rat" = "col1", "m_rat" = "col2")
+
+
+# F-test to check if the variances are different
+res.ftest <- var.test(f_rat, m_rat)
+# p-value = 0.00226, which is less than 0.05. 
+# That means we should reject the null hypotheses -  two population variances are not equal
+
+
+# As the data is not normally distributed, samples are independent, not of the same size and have unequal variances, 
+# the only thing that's possible is Wilcoxon-Mann-Whitney test
+
+# Null hypothesis: there is no difference in the average ratings of the movies by male and female directors
+# Null hypothesis: movies by female directors get higher rating than movies by male directors
+wilcox.test <- wilcox.test(g_rat$f_rat, g_rat$m_rat, alternative = "greater")
+# p-value = 0.7094, which is more than a significance level of 0.05.
+# So, we fail to reject the null hypothesis - there is no difference in the average ratings of the movies directed by both gender
+
+
+# Calculating mean ratings by gender. 
+# Without taking into account the difference in samples, their similarity is statistically proved
+g_rat %>%
+  summarize(mean_m_rat = mean(m_rat), mean_f_rat = mean(f_rat))
+
+g_rat %>%
+  filter(f_rat != "NA") %>%
+  summarize(mean_f_rat = mean(f_rat))
+# mean_m_rat = 6.716867, mean_f_rat = 6.705882
+
+
+# To find the most watched directors
+most_watched_dir <- movies %>%
+  count(director)
+most_watched_dir <- most_watched_dir %>%
+  arrange(desc(n))
+
+
+# To find favorite directors at least 3 movies of which I watched
+most_watched_dir %>% 
+  filter(n >= 3) %>%
+  print(n = 55)
+movies %>%
+  filter(director %in% c('Wes Anderson', 'Martin Scorsese', 'Woody Allen', 'Krzysztof Kieslowski', 'Quentin Tarantino', 'David Fincher', 'Christopher Nolan', 'François Ozon', 'Sofia Coppola', 'Stanley Kubrick', 'Darren Aronofsky', 'David Lynch', 'Gaspar Noé', 'Kar-Wai Wong', 'Lars von Trier', 'Luca Guadagnino', 'Paul Verhoeven', 'Roman Polanski', 'David Cronenberg', 'Federico Fellini', 'Jean-Luc Godard', 'Nariman Aliev', 'Nicolas Winding Refn', 'Noah Baumbach', 'Paul Thomas Anderson', 'Pedro Almodóvar', 'Rainer Werner Fassbinder', 'Todd Haynes', 'Andrzej Wajda', 'Ari Aster', 'Baz Luhrmann', 'Billy Wilder', 'Christophe Honoré', 'Craig Gillespie', 'Damien Chazelle', 'Danny Boyle', 'Greta Gerwig', 'Guillermo del Toro', 'Ildikó Enyedi', 'Jim Jarmusch', 'Joel Coen, Ethan Coen', 'Kenneth Branagh', 'Martin McDonagh', 'Milos Forman', 'Richard Linklater', 'Rob Reiner', 'Robert Zemeckis', 'Sam Mendes', 'Sean Baker', 'Steven Spielberg', 'Wim Wenders', 'Yorgos Lanthimos', 'Yuri Ilyenko')) %>%
+  group_by(director) %>%
+  summarize(mean_rat = mean(my_rating)) %>%
+  arrange(desc(mean_rat))
+
+
+# Movies watched by the release date
+mean_by_year <- movies %>%
+  drop_na(my_rating) %>%
+  group_by(year) %>%
+  summarize(mean = mean(my_rating))
+  
+ggplot(by_year, aes(year)) + geom_histogram(bins = 129) + 
+  scale_x_continuous(breaks = c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020)) + 
+  labs(x = "release date") + 
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_text(size = 15), 
+        axis.text.y = element_text(size = 15), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'),
+        plot.background = element_rect(fill='#DEC0CD'))
+
+
+# To find the highest rated decades
+mean_by_year <- mean_by_year %>% 
+  mutate(Decade = paste0(floor(ifelse(year<2000, year-1900, year)/10)*10, "'s"))
+mean_by_year %>%
+  group_by(Decade) %>%
+  summarize(mean_d = mean(mean)) %>%
+  arrange(desc(mean_d))
+
+
+# Duration of the movie products
+# With replacement of "feature" for "series" label for those series that are < 240 min
+movies <- movies %>%
+  mutate(duration = case_when(runtime_min <= 40 ~ 'short',
+                              runtime_min < 240 ~ 'feature',
+                              runtime_min >= 240 ~ 'series'))
+movies <- movies %>%
+  arrange(desc(runtime_min))
+movies$duration2 <- replace(movies$duration, c(38, 39, 46, 111), c("series", "series", "series", "series"))
+dur_counted <- movies %>%
+  group_by(duration2) %>%
+  summarize(count = n())
+ggplot(dur_counted, aes(x = fct_relevel(duration2, "short"), y = count)) + geom_col() + 
+  geom_text(aes(label = count), vjust = -0.8, size = 5) +
+  theme(axis.title.x = element_blank(),  
+        axis.text.x = element_text(size = 20), 
+        axis.text.y = element_text(size = 15), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'),
+        plot.background = element_rect(fill='#DEC0CD'))
+
+dur_grouped <- movies %>%
+  group_by(duration2, year_rated) %>%
+  summarise(count = n())
+ggplot(dur_grouped, aes(x = year_rated, y = count, color = duration2)) + 
+  geom_line(size = 1.5) +
+  scale_color_manual(values=c("#545454", "#AF1695", "#FFFFFF")) +
+  theme(axis.title.x = element_blank(),  
+        axis.text.x = element_text(size = 20), 
+        axis.text.y = element_text(size = 15), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'),
+        plot.background = element_rect(fill='#DEC0CD'),
+        legend.title = element_blank(), 
+        legend.position = "top", 
+        legend.background = element_rect(fill='#DEC0CD'),
+        legend.text = element_text(size = 15))
+
+
+# Genres
+#(IMDb puts "Short" in the genres column, and as already being described, it was omitted from the analysis)
+genres <- movies %>%
+  select(title, year_rated, my_rating, genre)
+genres <- genres %>%
+mutate(Comedy = if_else(str_detect(genre, "Comedy"), "1", "0"),
+       Romance = if_else(str_detect(genre, "Romance"), "1", "0"),
+       Thriller = if_else(str_detect(genre, "Thriller"), "1", "0"),
+       Drama = if_else(str_detect(genre, "Drama"), "1", "0"),
+       Crime = if_else(str_detect(genre, "Crime"), "1", "0"),
+       Biography = if_else(str_detect(genre, "Biography"), "1", "0"),
+       History = if_else(str_detect(genre, "History"), "1", "0"),
+       Mystery = if_else(str_detect(genre, "Mystery"), "1", "0"),
+       Sci_Fi = if_else(str_detect(genre, "Sci-Fi"), "1", "0"), 
+       Action = if_else(str_detect(genre, "Action"), "1", "0"),
+       Adventure = if_else(str_detect(genre, "Adventure"), "1", "0"),
+       Music = if_else(str_detect(genre, "Music"), "1", "0"),
+       Musical = if_else(str_detect(genre, "Musical"), "1", "0"),
+       Sport = if_else(str_detect(genre, "Sport"), "1", "0"),
+       Family = if_else(str_detect(genre, "Family"), "1", "0"),
+       Film_Noir = if_else(str_detect(genre, "Film-Noir"), "1", "0"),
+       Animation = if_else(str_detect(genre, "Animation"), "1", "0"),
+       Experimenal = if_else(str_detect(genre, "Experimental"), "1", "0"),
+       Documentary = if_else(str_detect(genre, "Documentary"), "1", "0"),
+       War = if_else(str_detect(genre, "War"), "1", "0"),
+       Western = if_else(str_detect(genre, "Western"), "1", "0"),
+       Fantasy = if_else(str_detect(genre, "Fantasy"), "1", "0"),
+       Horror = if_else(str_detect(genre, "Horror"), "1", "0"))
+
+genres$Comedy <- as.numeric(genres$Comedy)
+genres$Romance <- as.numeric(genres$Romance)
+genres$Thriller <- as.numeric(genres$Thriller)
+genres$Drama <- as.numeric(genres$Drama)
+genres$Crime <- as.numeric(genres$Crime)
+genres$Biography <- as.numeric(genres$Biography)
+genres$History <- as.numeric(genres$History)
+genres$Mystery <- as.numeric(genres$Mystery)
+genres$Sci_Fi <- as.numeric(genres$Sci_Fi)
+genres$Action <- as.numeric(genres$Action)
+genres$Adventure <- as.numeric(genres$Adventure)
+genres$Music <- as.numeric(genres$Music)
+genres$Musical <- as.numeric(genres$Musical)
+genres$Sport <- as.numeric(genres$Sport)
+genres$Family <- as.numeric(genres$Family)
+genres$Film_Noir <- as.numeric(genres$Film_Noir)
+genres$Animation <- as.numeric(genres$Animation)
+genres$Experimenal <- as.numeric(genres$Experimenal)
+genres$Documentary <- as.numeric(genres$Documentary)
+genres$War <- as.numeric(genres$War)
+genres$Western <- as.numeric(genres$Western)
+genres$Fantasy <- as.numeric(genres$Fantasy)
+genres$Horror <- as.numeric(genres$Horror)
+
+# Genre columns contain missing values in the <NA> format. 
+# My attempts to replace them with 0 were unsuccessful
+# And they can't be  dropped altogether because that would delete rows with present data in other columns
+genres %>%
+  filter(Comedy %in% c(1, 0)) %>%
+  summarize(comedy_s = sum(Comedy))
+genres %>%
+  filter(Romance %in% c(1, 0)) %>%
+  summarize(romance_s = sum(Romance))
+genres %>%
+  filter(Thriller %in% c(1, 0)) %>%
+  summarize(thriller_s = sum(Thriller))
+genres %>%
+  filter(Drama %in% c(1, 0)) %>%
+  summarize(drama_s = sum(Drama))
+genres %>%
+  filter(Crime %in% c(1, 0)) %>%
+  summarize(crime_s = sum(Crime))
+genres %>%
+  filter(Biography %in% c(1, 0)) %>%
+  summarize(biography_s = sum(Biography))
+genres %>%
+  filter(History %in% c(1, 0)) %>%
+  summarize(history_s = sum(History))
+genres %>%
+  filter(Mystery %in% c(1, 0)) %>%
+  summarize(myst_s = sum(Mystery))
+genres %>%
+  filter(Sci_Fi %in% c(1, 0)) %>%
+  summarize(sf_s = sum(Sci_Fi))
+genres %>%
+  filter(Action %in% c(1, 0)) %>%
+  summarize(act = sum(Action))
+genres %>%
+  filter(Adventure %in% c(1, 0)) %>%
+  summarize(adv = sum(Adventure))
+genres %>%
+  filter(Music %in% c(1, 0)) %>%
+  summarize(mus = sum(Music))
+genres %>%
+  filter(Musical %in% c(1, 0)) %>%
+  summarize(music_ = sum(Musical))
+genres %>%
+  filter(Sport %in% c(1, 0)) %>%
+  summarize(sp = sum(Sport))
+genres %>%
+  filter(Family %in% c(1, 0)) %>%
+  summarize(fam = sum(Family))
+genres %>%
+  filter(Film_Noir %in% c(1, 0)) %>%
+  summarize(fn = sum(Film_Noir))
+genres %>%
+  filter(Animation %in% c(1, 0)) %>%
+  summarize(an = sum(Animation))
+genres %>%
+  filter(Experimenal %in% c(1, 0)) %>%
+  summarize(exp = sum(Experimenal))
+genres %>%
+  filter(Documentary %in% c(1, 0)) %>%
+  summarize(doc = sum(Documentary))
+genres %>%
+  filter(War %in% c(1, 0)) %>%
+  summarize(w = sum(War))
+genres %>%
+  filter(Western %in% c(1, 0)) %>%
+  summarize(west = sum(Western))
+genres %>%
+  filter(Fantasy %in% c(1, 0)) %>%
+  summarize(fant = sum(Fantasy))
+genres %>%
+  filter(Horror %in% c(1, 0)) %>%
+  summarize(hor = sum(Horror))
+
+Genres <- c('Comedy', 'Romance', 'Thriller', 'Drama', 'Crime', 'Biography', 
+            'History', 'Mystery', 'Sci_Fi', 'Action', 'Adventure', 'Music', 
+            'Musical', 'Sport', 'Family', 'Film_noir', 'Animation', 'Experimental', 
+            'Documentary', 'War', 'Western', 'Fantasy', 'Horror')
+Count <- c(249, 178, 160, 531, 108, 65, 47, 100, 43, 39, 50, 64, 
+           25, 4, 19, 2, 24, 1, 62, 40, 9, 68, 79)
+genres_sum <- data_frame(Genres, Count)
+
+ggplot(genres_sum, aes(x = fct_reorder(Genres, Count), y = Count)) + 
+  geom_col() + coord_flip() +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_blank(), 
+        axis.text.y = element_text(size = 15), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'),
+        plot.background = element_rect(fill='#DEC0CD'))
+
+# To find most watched genre combinations
+# In presentation, I omit single-worded results
+movies %>% 
+  group_by(genre) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+
+# 2023 stats
+
+# Movies watched and hours watched
+movies %>%
+  group_by(year_rated) %>% 
+  summarize(count = n())
+
+movies %>%
+  filter(year_rated == 2023) %>%
+  drop_na(runtime_min) %>%
+  summarize(total_hours = sum(runtime_min)/60)
+
+# Most watched and highest rated directors
+movies_2023 <- movies %>%
+  filter(year_rated == 2023)
+most_watched_dir_2023 <- movies_2023 %>%
+  count(director)
+most_watched_dir_2023 <- most_watched_dir_2023 %>%
+  arrange(desc(n))
+most_watched_dir_2023
+
+movies_2023 %>%
+  filter(director %in% c('Wes Anderson', 'Krzysztof Kieslowski', 'Darren Aronofsky','Paul Verhoeven', 'Pedro Almodóvar', 'Rainer Werner Fassbinder', 'Todd Haynes', 'Martin Scorsese', 'Guillermo del Toro', 'Richard Linklater', 'Wim Wender')) %>%
+  group_by(director) %>%
+  summarize(mean_rat = mean(my_rating)) %>%
+  arrange(desc(mean_rat))
+
+# Distribution of viewings per month
+month_name <- with(movies, factor(month_rated, levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), labels = c('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')))
+movies$month_name <- month_name
+
+by_month_2023 <- movies %>%
+  filter(year_rated == 2023) %>%
+  group_by(month_name) %>%
+  summarize(count = n())
+ggplot(by_month_2023, aes(x = month_name, y = count)) + geom_col(width = 0.95, color = "white") + 
+  theme(axis.title.x = element_blank(), 
+        axis.title.y = element_blank(), 
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill='#DEC0CD'), 
+        plot.background = element_rect(fill='#DEC0CD'))
+
+# To find most watched genres
+genres23 <- genres %>%
+  filter(year_rated == 2023)
+genres23 %>%
+  filter(Comedy %in% c(1, 0)) %>%
+  summarize(comedy_s = sum(Comedy))
+genres23 %>%
+  filter(Romance %in% c(1, 0)) %>%
+  summarize(romance_s = sum(Romance))
+genres23 %>%
+  filter(Thriller %in% c(1, 0)) %>%
+  summarize(thriller_s = sum(Thriller))
+genres23 %>%
+  filter(Drama %in% c(1, 0)) %>%
+  summarize(drama_s = sum(Drama))
+genres23 %>%
+  filter(Crime %in% c(1, 0)) %>%
+  summarize(crime_s = sum(Crime))
+genres23 %>%
+  filter(Biography %in% c(1, 0)) %>%
+  summarize(biography_s = sum(Biography))
+genres23 %>%
+  filter(History %in% c(1, 0)) %>%
+  summarize(history_s = sum(History))
+genres23 %>%
+  filter(Mystery %in% c(1, 0)) %>%
+  summarize(myst_s = sum(Mystery))
+genres23 %>%
+  filter(Sci_Fi %in% c(1, 0)) %>%
+  summarize(sf_s = sum(Sci_Fi))
+genres23 %>%
+  filter(Action %in% c(1, 0)) %>%
+  summarize(act = sum(Action))
+genres23 %>%
+  filter(Adventure %in% c(1, 0)) %>%
+  summarize(adv = sum(Adventure))
+genres23 %>%
+  filter(Music %in% c(1, 0)) %>%
+  summarize(mus = sum(Music))
+genres23 %>%
+  filter(Musical %in% c(1, 0)) %>%
+  summarize(music_ = sum(Musical))
+genres23 %>%
+  filter(Sport %in% c(1, 0)) %>%
+  summarize(sp = sum(Sport))
+genres23 %>%
+  filter(Family %in% c(1, 0)) %>%
+  summarize(fam = sum(Family))
+genres23 %>%
+  filter(Film_Noir %in% c(1, 0)) %>%
+  summarize(fn = sum(Film_Noir))
+genres23 %>%
+  filter(Animation %in% c(1, 0)) %>%
+  summarize(an = sum(Animation))
+genres23 %>%
+  filter(Experimenal %in% c(1, 0)) %>%
+  summarize(exp = sum(Experimenal))
+genres23 %>%
+  filter(Documentary %in% c(1, 0)) %>%
+  summarize(doc = sum(Documentary))
+genres23 %>%
+  filter(War %in% c(1, 0)) %>%
+  summarize(w = sum(War))
+genres23 %>%
+  filter(Western %in% c(1, 0)) %>%
+  summarize(west = sum(Western))
+genres23 %>%
+  filter(Fantasy %in% c(1, 0)) %>%
+  summarize(fant = sum(Fantasy))
+genres23 %>%
+  filter(Horror %in% c(1, 0)) %>%
+  summarize(hor = sum(Horror))
+
+Genres23 <- c('Comedy', 'Romance', 'Thriller', 'Drama', 'Crime', 'Biography', 
+            'History', 'Mystery', 'Sci_Fi', 'Action', 'Adventure', 'Music', 
+            'Musical', 'Sport', 'Family', 'Film_noir', 'Animation', 'Experimental', 
+            'Documentary', 'War', 'Western', 'Fantasy', 'Horror')
+Count23 <- c(80, 70, 58, 194, 34, 18, 17, 41, 12, 9, 
+             18, 18, 8, 0, 8, 2, 6, 1, 30, 15, 1, 23, 35)
+genres_sum23 <- data_frame(Genres23, Count23)
+
+genres_sum23 <- genres_sum23 %>%
+  arrange(desc(Count23)) %>%
+  slice_max(Count23, n = 10)
+
+ggplot(genres_sum23, aes(x = fct_reorder(Genres23, Count23), y = Count23)) + 
+  geom_col() + coord_flip() +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_blank(), 
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'),
+        plot.background = element_rect(fill='#DEC0CD'))
+
+# To find highest rated genres
+genres %>%
+  filter(year_rated == 2023, Romance == 1) %>%
+  summarize(m_rom = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Romance == 1) %>%
+  summarize(m_rom = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Thriller == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Drama == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Crime == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Biography == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, History == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Mystery == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Sci_Fi == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Action == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Adventure == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Music == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Musical == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Family == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Film_Noir == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Animation == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Documentary == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, War == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Western == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Fantasy == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Horror == 1) %>%
+  summarize(mean = mean(my_rating))
+
+genres_top <- c('Comedy', 'Romance', 'Thriller', 'Drama', 'Crime', 'Biography', 
+                'History', 'Mystery', 'Sci_Fi', 'Action', 'Adventure', 'Music', 
+                'Musical', 'Family', 'Film_noir', 'Animation', 
+                'Documentary', 'War', 'Fantasy', 'Horror')
+
+count_top <- c(6.52, 6.23, 6.55, 6.48, 6.5, 6.67, 6.76, 6.54, 6.42, 6.78, 
+               6.28, 6.28, 6.25, 6.75, 5.5, 6.83, 6.63, 6.87, 6.61, 6.6)
+
+genres_top <- data_frame(genres_top, count_top)
+genres_top <- genres_top %>%
+  arrange(desc(count_top)) %>%
+  slice_max(count_top, n = 10)
+ggplot(genres_top, aes(x = fct_reorder(genres_top, count_top), y = count_top)) + 
+  geom_col() + coord_flip() +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_blank(), 
+        axis.text.y = element_text(size = 23), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'),
+        plot.background = element_rect(fill='#DEC0CD')) + ylim(0, 10)
+
+# To find top rated movies
+movies %>% 
+  filter(year_rated == 2023) %>%
+  arrange(desc(my_rating)) %>%
+  select(title, my_rating) %>%
+  print(n=16)
