@@ -120,3 +120,26 @@ SET "inflation_rate" = CASE
 ALTER TABLE food_cpi_y ADD COLUMN year NUMERIC;
 UPDATE food_cpi_y
 SET year = LEFT(month, 4)::NUMERIC;
+
+
+-- Grouping CPIs by year and region, adding the inflation rate in percents (wasn't used in visualization)
+
+CREATE VIEW food_cpi_y_gr AS
+SELECT year, region, avg_cpi,  
+  CASE 
+    WHEN avg_cpi > 100 THEN '+' || ROUND(avg_cpi - 100, 1)::TEXT || '%'
+    WHEN avg_cpi < 100 THEN '-' || ROUND(100 - avg_cpi, 1)::TEXT || '%'
+    ELSE 'null'
+  END AS inflation_rate
+FROM (SELECT year, region, AVG(cpi) AS avg_cpi
+  FROM food_cpi_y
+  GROUP BY year, region)
+
+
+-- Calculating the standard deviation of CPI to identify which regions experienced stronger fluctuations in prices
+
+SELECT region,
+       STDDEV(avg_cpi) AS std_dev_volatility
+FROM food_cpi_y_gr
+GROUP BY region
+ORDER BY std_dev_volatility DESC;
