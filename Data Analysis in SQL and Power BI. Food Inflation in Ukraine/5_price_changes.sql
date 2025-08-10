@@ -135,3 +135,14 @@ SELECT product_type, year, yoy_change
 FROM food_prices_growth 
 WHERE yoy_change IS NOT NULL
 ORDER BY yoy_change ASC;
+
+
+-- Calculating standard deviation of prices to indentify the products with highest and lowest prices volatility
+
+CREATE VIEW volatility AS
+SELECT product_type AS type,
+       STDDEV(avg_price_gr) AS std_dev_volatility
+FROM food_prices_growth
+GROUP BY product_type
+ORDER BY std_dev_volatility DESC;
+
