@@ -42,13 +42,14 @@ A playful but powerful inflation indicator based on the cost of ingredients for 
 
 ```text
 borshch_index = pork*0.5 + sunflower_oil*0.03 + potatoes*0.5 + onions*0.15 + cabbage*0.5 + beetroot*0.3 + carrots*0.15 + tomatoes*0.3
+```
 
 ## 📥 Deliverables
 • 	📊 [Download the Power BI Dashboard or the PDF version of it (.pbix)](https://github.com/staceoddity/portfolio.github.io/tree/8a96801e45f7db332b8518f9503333e14de917ee/Data%20Analysis%20in%20SQL%20and%20Power%20BI.%20Food%20Inflation%20in%20Ukraine/Deliverables)
 
 ## 🎥 Dashboard Demo
-
 Watch how filters and slicers reveal regional CPI trends and product-level inflation.
+![Dashboard Demo](Data Analysis in SQL and Power BI. Food Inflation in Ukraine/Deliverables/power_bi_recording.gif)
 
 ## 📚 Data Sources
 • 	[Ukrstat](https://stat.gov.ua/uk/explorer?urn=SSSU%3ADF_PRICE_CHANGE_CONSUMER_GOODS_SERVICE)
@@ -57,4 +58,5 @@ Watch how filters and slicers reveal regional CPI trends and product-level infla
 
 ## 👤 About the Author
 Created by Anastasiia Sukhobok — a data enthusiast passionate about turning complexity into accessible insights.
+
 Feel free to connect on [LinkedIn](https://www.linkedin.com/in/anastasiia-sukhobok/) or contact via [email] :)(mailto:nastia.sukhobok@gmail.com)
