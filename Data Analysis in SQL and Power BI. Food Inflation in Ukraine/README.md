@@ -49,6 +49,7 @@ borshch_index = pork*0.5 + sunflower_oil*0.03 + potatoes*0.5 + onions*0.15 + cab
 
 ## 🎥 Dashboard Demo
 Watch how filters and slicers reveal regional CPI trends and product-level inflation.
+
 ![Dashboard Demo](Deliverables/power_bi_recording.gif)
 
 ## 📚 Data Sources
@@ -59,5 +60,6 @@ Watch how filters and slicers reveal regional CPI trends and product-level infla
 ## 👤 About the Author
 Created by Anastasiia Sukhobok — a data enthusiast passionate about turning complexity into accessible insights.
 
-Feel free to connect on [LinkedIn](https://www.linkedin.com/in/anastasiia-sukhobok/) or contact via [email] :)(mailto:nastia.sukhobok@gmail.com)
+Feel free to connect on [LinkedIn](https://www.linkedin.com/in/anastasiia-sukhobok/) or contact via [email](mailto:nastia.sukhobok@gmail.com)  :)
+
 
