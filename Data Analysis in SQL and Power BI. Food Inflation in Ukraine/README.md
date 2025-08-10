@@ -49,7 +49,7 @@ borshch_index = pork*0.5 + sunflower_oil*0.03 + potatoes*0.5 + onions*0.15 + cab
 
 ## 🎥 Dashboard Demo
 Watch how filters and slicers reveal regional CPI trends and product-level inflation.
-![Dashboard Demo](Data Analysis in SQL and Power BI. Food Inflation in Ukraine/Deliverables/power_bi_recording.gif)
+![Dashboard Demo](Deliverables/power_bi_recording.gif)
 
 ## 📚 Data Sources
 • 	[Ukrstat](https://stat.gov.ua/uk/explorer?urn=SSSU%3ADF_PRICE_CHANGE_CONSUMER_GOODS_SERVICE)
@@ -60,3 +60,4 @@ Watch how filters and slicers reveal regional CPI trends and product-level infla
 Created by Anastasiia Sukhobok — a data enthusiast passionate about turning complexity into accessible insights.
 
 Feel free to connect on [LinkedIn](https://www.linkedin.com/in/anastasiia-sukhobok/) or contact via [email] :)(mailto:nastia.sukhobok@gmail.com)
+
