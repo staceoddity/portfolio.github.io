@@ -1,6 +1,6 @@
 # ☕ Coffee Sales Dashboard
 
-This project showcases a dynamic Excel dashboard built to analyze fictional coffee sales data . It integrates advanced Excel functions like `XLOOKUP`, `IF` logic, and PivotTables to simulate real-world business reporting. Though the dataset is synthetic, the dashboard structure reflects practical KPIs and customer segmentation strategies.
+This project showcases a dynamic Excel dashboard built to analyze fictional coffee sales data. It integrates advanced Excel functions like `XLOOKUP`, `IF` logic, and PivotTables to simulate real-world business reporting. Though the dataset is synthetic, the dashboard structure reflects practical KPIs and customer segmentation strategies.
 
 ## 🎯 Project Objectives
 
@@ -45,4 +45,5 @@ This project uses sample data for demonstration purposes only. It is intended to
 Created by Anastasiia Sukhobok — a data enthusiast passionate about turning complexity into accessible insights.
 
 Feel free to connect on [LinkedIn](https://www.linkedin.com/in/anastasiia-sukhobok/) or contact via [email](mailto:nastia.sukhobok@gmail.com)  :)
+
 
