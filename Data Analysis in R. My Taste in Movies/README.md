@@ -1,8 +1,7 @@
-# 🎬 My Taste in Movies – Data Analysis in R
+# 🎬 My Taste in Movies
 
-This personal data project explores my movie-watching habits from 2018 to 2023 using data exported from IMDb. I analyzed trends in genres, directors, countries, and ratings — with a special focus on my 2023 viewing activity.
+This data project explores my movie-watching habits from 2018 to 2023 using data exported from IMDb. I analyzed trends in genres, directors, countries, and ratings — with a special focus on my 2023 viewing activity.
 
----
 
 ## 🧠 What I Wanted to Know
 
@@ -15,7 +14,6 @@ I approached this project with a few key questions:
 
 To answer these, I cleaned and enriched my data, built visualizations, and ran statistical tests — including the Mann-Whitney test to compare rating distributions.
 
----
 
 ## 🛠️ Tools Used
 
@@ -23,7 +21,6 @@ To answer these, I cleaned and enriched my data, built visualizations, and ran s
 - Excel (for manual enrichment)  
 - Canva (for presentation)
 
----
 
 ## 📁 Project Structure
 
@@ -32,7 +29,6 @@ To answer these, I cleaned and enriched my data, built visualizations, and ran s
 - `data/` – original ratings file exported from IMDb, plus a manually enriched version with country and director gender  
 - `presentation/` – final slides with insights and exported visualizations
 
----
 
 ## 📊 Highlights
 
@@ -51,13 +47,12 @@ To answer these, I cleaned and enriched my data, built visualizations, and ran s
 
 Here are two slides summarizing my 2023 viewing activity:
 
-![Slide 1 – 2023 Overview](presentation/2023_slide1.png)  
-*Genres, directors, and monthly viewing trends*
+![](presentation/2023_stats_1.jpg)  
 
-![Slide 2 – Ratings & Hours Watched](presentation/2023_slide2.png)  
+![](presentation/2023_stats_2.jpg)  
 
----
 
 ## 📎 Presentation
 
 You can view the full final presentation with visualizations made in R [here](https://drive.google.com/file/d/1_lDyWsw4EOKJJxkZbKkPoYDVzGSgOx5X/view?usp=sharing)
+
