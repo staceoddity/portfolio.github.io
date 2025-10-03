@@ -1,0 +1,246 @@
+# 2023 stats
+
+# Movies watched and hours watched
+
+movies %>%
+  group_by(year_rated) %>% 
+  summarize(count = n())
+
+movies %>%
+  filter(year_rated == 2023) %>%
+  drop_na(runtime_min) %>%
+  summarize(total_hours = sum(runtime_min)/60)
+
+
+# Most watched and highest-rated directors
+
+movies_2023 <- movies %>%
+  filter(year_rated == 2023)
+most_watched_dir_2023 <- movies_2023 %>%
+  count(director)
+most_watched_dir_2023 <- most_watched_dir_2023 %>%
+  arrange(desc(n))
+most_watched_dir_2023
+
+movies_2023 %>%
+  filter(director %in% c('Wes Anderson', 'Krzysztof Kieslowski', 'Darren Aronofsky','Paul Verhoeven', 'Pedro Almodóvar', 'Rainer Werner Fassbinder', 'Todd Haynes', 'Martin Scorsese', 'Guillermo del Toro', 'Richard Linklater', 'Wim Wender')) %>%
+  group_by(director) %>%
+  summarize(mean_rat = mean(my_rating)) %>%
+  arrange(desc(mean_rat))
+
+
+# Distribution of viewings per month
+
+month_name <- with(movies, factor(month_rated, levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), labels = c('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')))
+movies$month_name <- month_name
+
+by_month_2023 <- movies %>%
+  filter(year_rated == 2023) %>%
+  group_by(month_name) %>%
+  summarize(count = n())
+ggplot(by_month_2023, aes(x = month_name, y = count)) + geom_col(width = 0.95, color = "white") + 
+  theme(axis.title.x = element_blank(), 
+        axis.title.y = element_blank(), 
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill='#DEC0CD'), 
+        plot.background = element_rect(fill='#DEC0CD'))
+
+
+# To find the most watched genres
+
+genres23 <- genres %>%
+  filter(year_rated == 2023)
+genres23 %>%
+  filter(Comedy %in% c(1, 0)) %>%
+  summarize(comedy_s = sum(Comedy))
+genres23 %>%
+  filter(Romance %in% c(1, 0)) %>%
+  summarize(romance_s = sum(Romance))
+genres23 %>%
+  filter(Thriller %in% c(1, 0)) %>%
+  summarize(thriller_s = sum(Thriller))
+genres23 %>%
+  filter(Drama %in% c(1, 0)) %>%
+  summarize(drama_s = sum(Drama))
+genres23 %>%
+  filter(Crime %in% c(1, 0)) %>%
+  summarize(crime_s = sum(Crime))
+genres23 %>%
+  filter(Biography %in% c(1, 0)) %>%
+  summarize(biography_s = sum(Biography))
+genres23 %>%
+  filter(History %in% c(1, 0)) %>%
+  summarize(history_s = sum(History))
+genres23 %>%
+  filter(Mystery %in% c(1, 0)) %>%
+  summarize(myst_s = sum(Mystery))
+genres23 %>%
+  filter(Sci_Fi %in% c(1, 0)) %>%
+  summarize(sf_s = sum(Sci_Fi))
+genres23 %>%
+  filter(Action %in% c(1, 0)) %>%
+  summarize(act = sum(Action))
+genres23 %>%
+  filter(Adventure %in% c(1, 0)) %>%
+  summarize(adv = sum(Adventure))
+genres23 %>%
+  filter(Music %in% c(1, 0)) %>%
+  summarize(mus = sum(Music))
+genres23 %>%
+  filter(Musical %in% c(1, 0)) %>%
+  summarize(music_ = sum(Musical))
+genres23 %>%
+  filter(Sport %in% c(1, 0)) %>%
+  summarize(sp = sum(Sport))
+genres23 %>%
+  filter(Family %in% c(1, 0)) %>%
+  summarize(fam = sum(Family))
+genres23 %>%
+  filter(Film_Noir %in% c(1, 0)) %>%
+  summarize(fn = sum(Film_Noir))
+genres23 %>%
+  filter(Animation %in% c(1, 0)) %>%
+  summarize(an = sum(Animation))
+genres23 %>%
+  filter(Experimenal %in% c(1, 0)) %>%
+  summarize(exp = sum(Experimenal))
+genres23 %>%
+  filter(Documentary %in% c(1, 0)) %>%
+  summarize(doc = sum(Documentary))
+genres23 %>%
+  filter(War %in% c(1, 0)) %>%
+  summarize(w = sum(War))
+genres23 %>%
+  filter(Western %in% c(1, 0)) %>%
+  summarize(west = sum(Western))
+genres23 %>%
+  filter(Fantasy %in% c(1, 0)) %>%
+  summarize(fant = sum(Fantasy))
+genres23 %>%
+  filter(Horror %in% c(1, 0)) %>%
+  summarize(hor = sum(Horror))
+
+Genres23 <- c('Comedy', 'Romance', 'Thriller', 'Drama', 'Crime', 'Biography', 
+            'History', 'Mystery', 'Sci_Fi', 'Action', 'Adventure', 'Music', 
+            'Musical', 'Sport', 'Family', 'Film_noir', 'Animation', 'Experimental', 
+            'Documentary', 'War', 'Western', 'Fantasy', 'Horror')
+Count23 <- c(80, 70, 58, 194, 34, 18, 17, 41, 12, 9, 
+             18, 18, 8, 0, 8, 2, 6, 1, 30, 15, 1, 23, 35)
+genres_sum23 <- data_frame(Genres23, Count23)
+
+genres_sum23 <- genres_sum23 %>%
+  arrange(desc(Count23)) %>%
+  slice_max(Count23, n = 10)
+
+ggplot(genres_sum23, aes(x = fct_reorder(Genres23, Count23), y = Count23)) + 
+  geom_col() + coord_flip() +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_blank(), 
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'),
+        plot.background = element_rect(fill='#DEC0CD'))
+
+
+# To find the highest-rated genres
+
+genres %>%
+  filter(year_rated == 2023, Romance == 1) %>%
+  summarize(m_rom = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Romance == 1) %>%
+  summarize(m_rom = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Thriller == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Drama == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Crime == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Biography == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, History == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Mystery == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Sci_Fi == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Action == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Adventure == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Music == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Musical == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Family == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Film_Noir == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Animation == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Documentary == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, War == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Western == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Fantasy == 1) %>%
+  summarize(mean = mean(my_rating))
+genres %>%
+  filter(year_rated == 2023, Horror == 1) %>%
+  summarize(mean = mean(my_rating))
+
+genres_top <- c('Comedy', 'Romance', 'Thriller', 'Drama', 'Crime', 'Biography', 
+                'History', 'Mystery', 'Sci_Fi', 'Action', 'Adventure', 'Music', 
+                'Musical', 'Family', 'Film_noir', 'Animation', 
+                'Documentary', 'War', 'Fantasy', 'Horror')
+
+count_top <- c(6.52, 6.23, 6.55, 6.48, 6.5, 6.67, 6.76, 6.54, 6.42, 6.78, 
+               6.28, 6.28, 6.25, 6.75, 5.5, 6.83, 6.63, 6.87, 6.61, 6.6)
+
+genres_top <- data_frame(genres_top, count_top)
+genres_top <- genres_top %>%
+  arrange(desc(count_top)) %>%
+  slice_max(count_top, n = 10)
+ggplot(genres_top, aes(x = fct_reorder(genres_top, count_top), y = count_top)) + 
+  geom_col() + coord_flip() +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_blank(), 
+        axis.text.y = element_text(size = 23), 
+        axis.title.y = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill='#DEC0CD'),
+        plot.background = element_rect(fill='#DEC0CD')) + ylim(0, 10)
+
+
+# To find top-rated movies
+
+movies %>% 
+  filter(year_rated == 2023) %>%
+  arrange(desc(my_rating)) %>%
+  select(title, my_rating) %>%
+  print(n=16)
